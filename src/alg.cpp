@@ -6,65 +6,69 @@
 template<typename T>
 class TPQueue {
  private:
-    T* arr;//массив с данными
-    int size;//размер массива
-    int begin, end;//начало и конец очереди
-    int count;//количество элементов
+  T *arr;
+  int size;
+  int begin, end;
+  int count;
+  int stepBack(int index) {
+    int res = --index;
+    if (res < 0)
+        res += size + 1;
+    return res;
+  }
+  int stepForward(int index) {
+    int res = ++index;
+    if (res > size)
+        res -= size + 1;
+    return res;
+  }
 
  public:
-    TPQueue() :
-        size(100),
-        begin(0), end(0), count(0) {
-        arr = new T[size + 1];
-    }
-    ~TPQueue() {
-        delete[] arr;
-    }
+  TPQueue() :
+    size(100),
+    begin(0), end(0), count(0) {
+    arr = new T[size + 1];
+  }
+  ~TPQueue() {
+    delete[] arr;
+  }
 
-    void push(const T& item) {
-        assert(count < size);
-        if (end != 0) {
-            arr[end] = item;
-            for (int i = end - 1; i >= begin; i--) {
-                if (item.prior > arr[i].prior) {
-                    arr[i + 1] = arr[i];
-                    arr[i] = item;
-                }
-            }
-        } else {
-            arr[begin] = item;
-        }
-        end++;
-        count++;
-        if (end > size)
-            end -= size + 1;
+  void push(const T &item) {
+    assert(count < size);
+    int cur = end;
+    while (begin != cur && item.prior > arr[stepBack(cur)].prior) {
+        arr[cur] = arr[stepBack(cur)];
+        cur = stepBack(cur);
     }
-    T pop() {
-        assert(count > 0);
+    arr[cur] = item;
+    end = stepForward(end);
+    count++;
+  }
 
-        T item = arr[begin++];
-        count--;
+  T pop() {
+    assert(count > 0);
+    T item = arr[begin];
+    count--;
+    begin = stepForward(begin);
+    return item;
+  }
 
-        if (begin > size)
-            begin -= size + 1;
+  T get() const {
+    assert(count > 0);
+    return arr[begin];
+  }
 
-        return item;
-    }
-    T get() const {
-        assert(count > 0);
-        return arr[begin];
-    }
-    bool isEmpty() const {
-        return count == 0;
-    }
-    bool isFull() const {
-        return count == size;
-    }
+  bool isEmpty() const {
+    return count == 0;
+  }
+
+  bool isFull() const {
+    return count == size;
+  }
 };
 
 struct SYM {
   char ch;
   int  prior;
 };
-
 #endif // INCLUDE_TPQUEUE_H_
